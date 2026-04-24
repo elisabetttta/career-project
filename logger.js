@@ -1,8 +1,8 @@
 const config = require('./config');
 
 const createLogger = () => {
-  return (message) => {
-    console.log([${config.appName}]: ${message});
+  return function(message) {
+    console.log("[" + config.appName + "]: " + message);
   };
 };
 

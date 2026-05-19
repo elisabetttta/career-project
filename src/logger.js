@@ -3,7 +3,6 @@ const config = require('../config');
 const logger = {
     log(level, message) {
         const timestamp = new Date().toISOString();
-        // Простая авторская генерация уникального ID для контекста строки лога
         const requestId = Math.random().toString(36).substring(2, 10).toUpperCase();
         
         console.log("[" + timestamp + "] [" + config.appName + "] [" + level.toUpperCase() + "] [ReqID: " + requestId + "]: " + message);

@@ -1,18 +1,23 @@
-const config = require('../config');
+const generateRequestId = () => {
+  return Math.random().toString(36).substring(2, 10);
+};
+
+const formatMessage = (level, message, requestId) => {
+  return `[${level}] [${new Date().toISOString()}] [ReqID: ${requestId}] ${message}`;
+};
 
 const logger = {
-    log(level, message) {
-        const timestamp = new Date().toISOString();
-        const requestId = Math.random().toString(36).substring(2, 10).toUpperCase();
-        
-        console.log("[" + timestamp + "] [" + config.appName + "] [" + level.toUpperCase() + "] [ReqID: " + requestId + "]: " + message);
-    },
+  info(message, requestId = generateRequestId()) {
+    console.log(formatMessage('INFO', message, requestId));
+  },
 
-    error(message) { this.log('error', message); },
-    warn(message) { this.log('warn', message); },
-    info(message) { this.log('info', message); },
-    debug(message) { this.log('debug', message); },
-    trace(message) { this.log('trace', message); }
+  warn(message, requestId = generateRequestId()) {
+    console.warn(formatMessage('WARN', message, requestId));
+  },
+
+  error(message, requestId = generateRequestId()) {
+    console.error(formatMessage('ERROR', message, requestId));
+  },
 };
 
 module.exports = logger;

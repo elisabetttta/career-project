@@ -1,15 +1,16 @@
-const createLogger = require('./logger');
-const logger = createLogger();
+const logger = require('./logger');
 
-// Синхронный запуск
-logger("scheduler.js запущен");
+logger.info('scheduler.js запущен');
 
 const scheduleTask = (name, interval, task) => {
-  logger("Задача " + name + " запланирована (интервал: " + interval + "мс)");
-  setInterval(task, interval);
+  logger.info(`Задача ${name} запланирована`);
+
+  setInterval(() => {
+    logger.info(`Выполнение задачи: ${name}`);
+    task();
+  }, interval);
 };
 
-// Добавляем задачу: каждые 10 секунд (10000 миллисекунд)
-scheduleTask("RunningTask", 10000, () => {
-  logger("running");
+scheduleTask('RunningTask', 10000, () => {
+  logger.info('running');
 });

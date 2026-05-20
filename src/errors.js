@@ -1,16 +1,12 @@
- function AppError(message, status) {
-    this.message = message;
-    this.status = status || 500;
-    this.name = "AppError";
+class AppError extends Error {
+  constructor(message, status = 500) {
+    super(message);
+
+    this.status = status;
+    this.name = 'AppError';
+
+    Error.captureStackTrace(this, this.constructor);
+  }
 }
 
-function AccessError(message) {
-    this.message = message;
-    this.status = 403;
-    this.name = "AccessError";
-}
-
-module.exports = {
-    AppError: AppError,
-    AccessError: AccessError
-};
+module.exports = AppError;

@@ -11,17 +11,24 @@ app.get("/secret", authMiddleware, (req, res) => {
 });
 app.get("/currencies", authMiddleware, (req, res) => {
   res.json(currencies);
-  });
-  app.post("/currencies", authMiddleware, (req, res) => {
+});
+app.post("/currencies", authMiddleware, (req, res) => {
   const { name, ticker } = req.body;
-
   const newCurrency = {
     name,
     ticker
   };
-
   currencies.push(newCurrency);
-
   res.status(201).json(newCurrency);
+});
+app.put("/currencies/:ticker", authMiddleware, (req, res) => {
+  const { ticker } = req.params;
+  const { name } = req.body;
+  const currency = currencies.find(c => c.ticker === ticker);
+  if (!currency) {
+    return res.status(404).send("Not found");
+  }
+  currency.name = name || currency.name;
+  res.json(currency);
 });
 module.exports = app;

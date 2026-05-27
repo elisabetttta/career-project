@@ -1,16 +1,8 @@
-const logger = require('./logger');
+const app = require("./app");
+require("dotenv").config();
 
-logger.info('scheduler.js запущен');
+const PORT = process.env.PORT || 3000;
 
-const scheduleTask = (name, interval, task) => {
-  logger.info(`Задача ${name} запланирована`);
-
-  setInterval(() => {
-    logger.info(`Выполнение задачи: ${name}`);
-    task();
-  }, interval);
-};
-
-scheduleTask('RunningTask', 10000, () => {
-  logger.info('running');
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
 });

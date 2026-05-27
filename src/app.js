@@ -31,4 +31,13 @@ app.put("/currencies/:ticker", authMiddleware, (req, res) => {
   currency.name = name || currency.name;
   res.json(currency);
 });
+app.delete("/currencies/:ticker", authMiddleware, (req, res) => {
+  const { ticker } = req.params;
+  const index = currencies.findIndex(c => c.ticker === ticker);
+  if (index === -1) {
+    return res.status(404).send("Not found");
+  }
+  currencies.splice(index, 1);
+  res.json({ message: "Deleted" });
+});
 module.exports = app;

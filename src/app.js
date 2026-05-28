@@ -1,4 +1,5 @@
 const express = require("express");
+const axios = require("axios");
 const authMiddleware = require("./authMiddleware");
 const app = express();
 app.use(express.json());
@@ -39,5 +40,32 @@ app.delete("/currencies/:ticker", authMiddleware, (req, res) => {
   }
   currencies.splice(index, 1);
   res.json({ message: "Deleted" });
+});
+app.get("/price", authMiddleware, async (req, res) => {
+  const { currency } = req.query;
+  const exists = currencies.find(c => c.ticker === currency);
+  if (!exists) {
+    return res.status(404).send("Currency not found");
+  }
+  try {
+    const response = await axios.get(
+      "https://api.binance.com/api/v3/ticker/price",
+      );
+    const result = response.data.find(item =>
+      item.symbol === currency + "USDT"
+    );
+    if (!result) {
+      return res.status(404).send("Price not found");
+    }
+    res.json({
+      currency,
+      price: result.price
+    });
+  } catch (err) {
+    res.status(500).send("Error fetching price");
+  }
+});
+app.listen(3000, () => {
+  console.log("Server started on port 3000");
 });
 module.exports = app;

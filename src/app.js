@@ -1,49 +1,63 @@
 const express = require("express");
 const axios = require("axios");
 const authMiddleware = require("./authMiddleware");
+require("./db/init");
+const currencyRepository = require("./repositories/currencyRepository");
 const app = express();
 app.use(express.json());
-const currencies = [];
+
 app.get("/status", (req, res) => {
   res.send("ok");
 });
 app.get("/secret", authMiddleware, (req, res) => {
   res.send("you have access");
 });
-app.get("/currencies", authMiddleware, (req, res) => {
+app.get("/currencies", authMiddleware, async (req, res) => {
+	try {
+    const currencies = await currencyRepository.getAll();
   res.json(currencies);
-});
-app.post("/currencies", authMiddleware, (req, res) => {
-  const { name, ticker } = req.body;
-  const newCurrency = {
-    name,
-    ticker
-  };
-  currencies.push(newCurrency);
-  res.status(201).json(newCurrency);
-});
-app.put("/currencies/:ticker", authMiddleware, (req, res) => {
-  const { ticker } = req.params;
-  const { name } = req.body;
-  const currency = currencies.find(c => c.ticker === ticker);
-  if (!currency) {
-    return res.status(404).send("Not found");
+  } catch (error) {
+    res.status(500).send("Database error");
   }
-  currency.name = name || currency.name;
-  res.json(currency);
 });
-app.delete("/currencies/:ticker", authMiddleware, (req, res) => {
-  const { ticker } = req.params;
-  const index = currencies.findIndex(c => c.ticker === ticker);
-  if (index === -1) {
-    return res.status(404).send("Not found");
+app.post("/currencies", authMiddleware, async (req, res) => {
+  try {
+    const { name, ticker } = req.body;
+    const newCurrency = await currencyRepository.create(name, ticker);
+    res.status(201).json(newCurrency);
+  } catch (error) {
+    res.status(500).send("Database error");
   }
-  currencies.splice(index, 1);
-  res.json({ message: "Deleted" });
+});
+app.put("/currencies/:ticker", authMiddleware, async (req, res) => {
+ try {
+const { ticker } = req.params;
+const { name } = req.body;
+const result = await currencyRepository.update(name, ticker);
+if (!result) {
+ return res.status(404).send("Not found");
+}
+res.json({ message: "Updated" });
+} catch (error) {
+res.status(500).send("Database error");
+  }
+});
+app.delete("/currencies/:ticker", authMiddleware, async (req, res) => {
+ try {
+const { ticker } = req.params;
+const result = await currencyRepository.delete(ticker);
+ if (!result) {
+return res.status(404).send("Not found");
+}
+ res.json({ message: "Deleted" });
+} catch (error) {
+ res.status(500).send("Database error");
+}
 });
 app.get("/price", authMiddleware, async (req, res) => {
   const { currency } = req.query;
-  const exists = currencies.find(c => c.ticker === currency);
+const all = await currencyRepository.getAll();
+const exists = all.find(c => c.ticker === currency);
   if (!exists) {
     return res.status(404).send("Currency not found");
   }

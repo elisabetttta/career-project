@@ -19,5 +19,4 @@ const logger = {
     console.error(formatMessage('ERROR', message, requestId));
   },
 };
-
 module.exports = logger;

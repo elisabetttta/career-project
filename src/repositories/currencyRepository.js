@@ -1,75 +1,84 @@
 const db = require("../db/database");
-module.exports = {
- getAll() {
-return new Promise((resolve, reject) => {
-db.all("SELECT * FROM currencies", [], (err, rows) => {
+function run(sql, params = []) {
+ return new Promise((resolve, reject) => {
+ db.run(sql, params, function (err) {
 if (err) return reject(err);
-resolve(rows);
- });
- });
+ resolve({
+ lastID: this.lastID,
+ changes: this.changes,
+});
+});
+});
+}
+function all(sql, params = []) {
+ return new Promise((resolve, reject) => {
+ db.all(sql, params, (err, rows) => {
+if (err) return reject(err);
+ resolve(rows);
+});
+});
+}
+function get(sql, params = []) {
+ return new Promise((resolve, reject) => {
+ db.get(sql, params, (err, row) => {
+if (err) return reject(err);
+ resolve(row || null);
+});
+});
+}
+let transactionQueue = Promise.resolve();
+function withTransaction(callback) {
+const transaction = transactionQueue.then(async () => {
+ await run("BEGIN IMMEDIATE TRANSACTION");
+try {
+const result = await callback();
+ await run("COMMIT");
+ return result;
+} catch (error) {
+ try {
+ await run("ROLLBACK");
+} catch (rollbackError) {
+error.rollbackError = rollbackError;
+}
+throw error;
+}
+});
+ transactionQueue = transaction.catch(() => {});
+ return transaction;
+}
+module.exports = {
+getAll() {
+ return all("SELECT id, name, ticker FROM currencies ORDER BY id");
 },
-create(name, ticker) {
-return new Promise((resolve, reject) => {
-db.run("BEGIN TRANSACTION");
-db.run(
- "INSERT INTO currencies (name, ticker) VALUES (?, ?)",
- [name, ticker],
-function (err) {
-if (err) {
-db.run("ROLLBACK");
-return reject(err);
- }
-const id = this.lastID;
-db.run("COMMIT", (commitErr) => {
-if (commitErr) return reject(commitErr);
-resolve({
-id,
+findByTicker(ticker) {
+ return get("SELECT id, name, ticker FROM currencies WHERE ticker = ?", [ticker]);
+},
+ create(name, ticker) {
+ return withTransaction(async () => {
+const result = await run("INSERT INTO currencies (name, ticker) VALUES (?, ?)", [
 name,
 ticker,
- });
+]);
+ return {
+id: result.lastID,
+name,
+ticker,
+};
 });
- }
- );
- });
 },
 update(name, ticker) {
-return new Promise((resolve, reject) => {
-db.run("BEGIN TRANSACTION");
-db.run(
- "UPDATE currencies SET name = ? WHERE ticker = ?",
- [name, ticker],
-function (err) {
-if (err) {
-db.run("ROLLBACK");
-return reject(err);
-}
-const changes = this.changes;
-db.run("COMMIT", (commitErr) => {
-if (commitErr) return reject(commitErr);
-resolve(changes);
- });
-}
- );
+ return withTransaction(async () => {
+const result = await run("UPDATE currencies SET name = ? WHERE ticker = ?", [
+name,
+ticker,
+]);
+ return result.changes;
 });
 },
 delete(ticker) {
-return new Promise((resolve, reject) => {
-db.run("BEGIN TRANSACTION");
-db.run(
-"DELETE FROM currencies WHERE ticker = ?",
- [ticker],
- function (err) {
-if (err) {
-db.run("ROLLBACK");
-return reject(err);
-}
-const changes = this.changes;
-db.run("COMMIT", (commitErr) => {
-if (commitErr) return reject(commitErr);
-resolve(changes);
- });
-}
- );
- });
- },
+ return withTransaction(async () => {
+const result = await run("DELETE FROM currencies WHERE ticker = ?", [ticker]);
+ return result.changes;
+});
+},
 };

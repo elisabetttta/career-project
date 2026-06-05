@@ -1,3 +1,5 @@
+const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
-const db = new sqlite3.Database("./database.sqlite");
+const dbFile = process.env.DB_FILE || path.join(__dirname, "..", "..", "database.sqlite");
+const db = new sqlite3.Database(dbFile);
 module.exports = db;

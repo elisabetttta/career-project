@@ -97,8 +97,7 @@ test("GET /price returns saved price from SQLite and does not call Binance", asy
 .send({ name: "Bitcoin", ticker: "BTC" });
  await priceRepository.save("BTC", "73412.18000000");
 jest.spyOn(binanceService, "getTickerPrice");
- const res = await request(app).get("/price?
-currency=BTC").set(authHeader);
+ const res = await request(app).get("/price?currency=BTC").set(authHeader);
 expect(res.statusCode).toBe(200);
 expect(res.body).toMatchObject({
 currency: "BTC",

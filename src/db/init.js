@@ -11,7 +11,10 @@ db.run(`
    (id INTEGER PRIMARY KEY AUTOINCREMENT,
    ticker TEXT NOT NULL UNIQUE,
    price REAL NOT NULL,
-   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)
+   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+   FOREIGN KEY (ticker) 
+   REFERENCES currencies(ticker)
+   ON DELETE CASCADE)
 `);
 });
 module.exports = db;

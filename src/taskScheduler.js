@@ -3,48 +3,34 @@ const priceRepository = require("./repositories/priceRepository");
 const binanceService = require("./services/binanceService");
 const logger = require("./logger");
 class TaskScheduler {
- constructor() {
- this.intervals = [];
+constructor(options = {}) {
+this.intervalMs = Number(options.intervalMs || process.env.PRICE_UPDATE_INTERVAL_MS || 60000);
+this.intervalId = null;
 }
- async updatePrices() {
- try {
+async updatePrices() {
 const currencies = await currencyRepository.getAll();
- for (const currency of currencies) {
- try {
-const price = await binanceService.getPrice(
-`${currency.ticker}USDT`
-);
- await priceRepository.savePrice(
-currency.ticker,
-price
-);
-logger.info(
-`Price updated for ${currency.ticker}`
-);
+for (const currency of currencies) {
+const ticker = currency.ticker.toUpperCase();
+const symbol = `${ticker}USDT`;
+try {
+const price = await binanceService.getTickerPrice(symbol);
+ await priceRepository.save(ticker, price);
 } catch (error) {
-logger.error(
-`Failed to update ${currency.ticker}: ${error.message}`
-);
- }
+console.error(`Failed to update price for ${symbol}:`, error.message);
 }
-} catch (error) {
-logger.error(error.message);
  }
 }
 start() {
+if (this.intervalId) return;
  this.updatePrices();
-const intervalId = setInterval(
- () => this.updatePrices(), 60000
-);
- this.intervals.push(intervalId);
-logger.info("Task scheduler started");
- }
+ this.intervalId = setInterval(() => {
+ this.updatePrices();
+ }, this.intervalMs);
+}
 stop() {
- for (const intervalId of this.intervals) {
-clearInterval(intervalId);
- }
- this.intervals = [];
-logger.info("Task scheduler stopped");
+ if (!this.intervalId) return;
+clearInterval(this.intervalId);
+ this.intervalId = null;
  }
 }
 module.exports = TaskScheduler;

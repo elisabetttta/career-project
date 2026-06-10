@@ -1,6 +1,6 @@
+require("dotenv").config();
 const app = require("./app");
 const TaskScheduler = require("./taskScheduler");
-require("dotenv").config();
 const PORT = process.env.PORT || 3000;
 const scheduler = new TaskScheduler();
 const server = app.listen(PORT, () => {

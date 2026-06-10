@@ -1,9 +1,12 @@
+const TaskScheduler = require("./taskScheduler");
 const express = require("express");
-const axios = require("axios");
+const axios = require('axios');
 const authMiddleware = require("./middleware/authMiddleware");
 require("./db/init");
 const currencyRepository = require("./repositories/currencyRepository");
+const priceRepository = require("./repositories/priceRepository");
 const app = express();
+const scheduler = new TaskScheduler();
 app.use(express.json());
 app.get("/status", (req, res) => {
  res.send("ok");
@@ -86,8 +89,17 @@ const response = await axios.get("https://api.binance.com/api/v3/ticker/price", 
 }
 });
 if (require.main === module) {
- app.listen(3000, () => {
- console.log("Server started on port 3000");
+ const server = app.listen(3000, () => {
+console.log("Server started on port 3000");
+scheduler.start();
 });
+ function gracefulShutdown() {
+scheduler.stop();
+server.close(() => {
+process.exit(0);
+});
+}
+process.on("SIGINT", gracefulShutdown);
+process.on("SIGTERM", gracefulShutdown);
 }
 module.exports = app;

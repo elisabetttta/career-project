@@ -32,6 +32,7 @@ const transaction = transactionQueue.then(async () => {
  await run("BEGIN IMMEDIATE TRANSACTION");
 try {
 const result = await callback();
+const axios = require('axios');
  await run("COMMIT");
  return result;
 } catch (error) {

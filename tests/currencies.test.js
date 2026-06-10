@@ -2,6 +2,7 @@ process.env.DB_FILE = ":memory:";
 process.env.TOKEN = "test-token";
 const axios = require("axios");
 const request = require("supertest");
+jest.mock("axios");
 const app = require("../src/app");
 const db = require("../src/db/database");
 const authHeader = { Authorization: "Bearer test-token" };
@@ -157,7 +158,7 @@ await request(app)
  name: "Ethereum",
  ticker: "ETH",
 });
-jest.spyOn(axios, "get").mockResolvedValue({
+axios.get.mockResolvedValue({
  data: {
  symbol: "ETHUSDT",
  price: "3500.12000000",

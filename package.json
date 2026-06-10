@@ -1,12 +1,12 @@
 {
   "name": "career-project",
-  "version": "1.0.0",
+  "version": "4.0.0",
   "description": "",
   "main": "src/scheduler.js",
   "scripts": {
   "start": "node src/scheduler.js",
   "test": "jest --runInBand"
-  }
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

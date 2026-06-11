@@ -4,6 +4,13 @@ require("./db/init");
  const currencyRepository = require("./repositories/currencyRepository");
  const priceRepository = require("./repositories/priceRepository");
  const app = express();
+ (async () => {
+ const btc = await currencyRepository.findByTicker('BTC');
+if (!btc) {
+ await currencyRepository.create('Bitcoin', 'BTC');
+ console.log('Bitcoin (BTC)');
+}
+})();
 app.use(express.json());
 app.get("/status", (req, res) => {
 res.send("ok");

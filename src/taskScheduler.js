@@ -15,6 +15,7 @@ const symbol = `${ticker}USDT`;
 try {
 const price = await binanceService.getPrice(symbol);
  await priceRepository.save(ticker, price);
+ console.log(`${symbol} = ${price}`);
 } catch (error) {
 console.error(`Failed to update price for ${symbol}:`, error.message);
 }

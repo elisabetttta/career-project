@@ -1,7 +1,6 @@
 const currencyRepository = require("./repositories/currencyRepository");
 const priceRepository = require("./repositories/priceRepository");
 const binanceService = require("./services/binanceService");
-const logger = require("./logger");
 class TaskScheduler {
 constructor(options = {}) {
 this.intervalMs = Number(options.intervalMs || process.env.PRICE_UPDATE_INTERVAL_MS || 60000);

@@ -13,7 +13,7 @@ for (const currency of currencies) {
 const ticker = currency.ticker.toUpperCase();
 const symbol = `${ticker}USDT`;
 try {
-const price = await binanceService.getTickerPrice(symbol);
+const price = await binanceService.getPrice(symbol);
  await priceRepository.save(ticker, price);
 } catch (error) {
 console.error(`Failed to update price for ${symbol}:`, error.message);

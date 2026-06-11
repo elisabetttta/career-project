@@ -80,15 +80,15 @@ test("scheduler updates prices from Binance and saves them to SQLite", async () 
 .post("/currencies")
 .set(authHeader)
 .send({ name: "Bitcoin", ticker: "BTC" });
-jest.spyOn(binanceService, "getTickerPrice").mockResolvedValue("73412.18000000");
+jest.spyOn(binanceService, "getPrice").mockResolvedValue("73412.18000000");
  const scheduler = new TaskScheduler({ intervalMs: 60000 });
  await scheduler.updatePrices();
  const savedPrice = await priceRepository.getByTicker("BTC");
 expect(savedPrice).toMatchObject({
 ticker: "BTC",
-price: "73412.18000000",
+price: 73412.18,
 });
- expect(binanceService.getTickerPrice).toHaveBeenCalledWith("BTCUSDT");
+ expect(binanceService.getPrice).toHaveBeenCalledWith("BTCUSDT");
 });
 test("GET /price returns saved price from SQLite and does not call Binance", async () => {
  await request(app)
@@ -96,13 +96,13 @@ test("GET /price returns saved price from SQLite and does not call Binance", asy
 .set(authHeader)
 .send({ name: "Bitcoin", ticker: "BTC" });
  await priceRepository.save("BTC", "73412.18000000");
-jest.spyOn(binanceService, "getTickerPrice");
+jest.spyOn(binanceService, "getPrice");
  const res = await request(app).get("/price?currency=BTC").set(authHeader);
 expect(res.statusCode).toBe(200);
 expect(res.body).toMatchObject({
 currency: "BTC",
-price: "73412.18000000",
+price: 73412.18,
 });
-expect(binanceService.getTickerPrice).not.toHaveBeenCalled();
+expect(binanceService.getPrice).not.toHaveBeenCalled();
 });
 });
